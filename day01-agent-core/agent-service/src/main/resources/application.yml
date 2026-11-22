@@ -1,0 +1,49 @@
+server:
+  port: 8081
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+
+spring:
+  application:
+    name: agent-service
+  mvc:
+    async:
+      # SSE 是异步请求,这个超时必须 >= emitter 的 timeout,否则会被容器提前掐断
+      request-timeout: 300000
+  jackson:
+    default-property-inclusion: non_null
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+agent:
+  # mock: 离线演示(无需 Key);openai: 任意 OpenAI 兼容网关
+  provider: ${AGENT_PROVIDER:mock}
+  max-steps: 6
+  request-timeout: 180s
+  memory-window: 20
+  rate-limit-per-minute: 20
+  llm:
+    base-url: ${AGENT_LLM_BASE_URL:https://api.deepseek.com/v1}
+    api-key: ${AGENT_LLM_API_KEY:}
+    model: ${AGENT_LLM_MODEL:deepseek-chat}
+    temperature: 0.3
+    connect-timeout: 10s
+    read-timeout: 90s
+  prompt:
+    inject-tool-catalog: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.agent: INFO
+    org.springframework.web.servlet.mvc.method.annotation: WARN

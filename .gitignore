@@ -1,0 +1,29 @@
+# 构建产物与依赖
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# 日志与临时文件
+*.log
+logs/
+.DS_Store
+*.tmp
+
+# 环境变量(切勿提交真实 Key)
+.env
+.env.*
+!.env.example
