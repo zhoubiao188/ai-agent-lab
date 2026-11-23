@@ -5,6 +5,7 @@
 | 日期 | 目录 | 主题 | 技术栈 |
 | --- | --- | --- | --- |
 | Day 01 | [`day01-agent-core`](./day01-agent-core) | 从零手写支持 Function Calling 与 SSE 流式输出的 AI Agent 服务 | Spring Boot 3.3 · Spring Cloud Gateway 2023 · Vue 3 · React 18 · SSE |
+| Day 02 | [`day02-memory-redis`](./day02-memory-redis) | Redis 会话记忆 + 滚动摘要压缩 + 归档召回,支撑 50 轮长对话 | Spring Boot 3.3 · Redis(Lettuce + Lua) · Spring Cloud Gateway · Vue 3 · React 18 |
 
 ## 为什么不用现成框架
 
@@ -41,10 +42,33 @@ java -jar gateway/target/gateway-1.0.0.jar              # :8080
 cd web-vue && npm i && npm run dev                       # :5173
 ```
 
+### Day 02 · memory-redis
+
+```
+用户提问 ──▶ 会话锁 ──▶ 水位判断 ──▶ 折叠最早整轮 ──▶ 摘要合并(增量)
+              │                        └─▶ 归档 Redis LIST ──┐
+              ├──▶ 归档召回(BM25-lite)◀───────────────────────┘
+              └──▶ 上下文 = 规则 + 工具 + 摘要 + 关键事实 + 召回片段 + 活跃窗口
+```
+
+- 压缩只按整轮切,结构上保证 `assistant(tool_calls)` 与 `tool` 结果不被拆散
+- 摘要 + 关键事实双轨:单号/金额/日期由正则保真,不交给模型改写
+- 失败降级链:摘要超时 → 本地规则摘要 → 连续失败熔断
+- 50 轮压测:7400 token 全量回放 → 743 token 稳定窗口,压缩 15 次,关键信息零丢失
+- 35 个单测 + 7 个 Redis 集成测试(Lua CAS / LTRIM / TTL 全覆盖)
+
+```bash
+cd day02-memory-redis
+mvn -q -DskipTests package
+java -jar memory-service/target/memory-service-1.0.0.jar   # :8081
+java -jar gateway/target/gateway-1.0.0.jar                 # :8080
+cd web-vue && npm i && npm run dev                          # :5173
+```
+
 ## 路线图
 
 - [x] Day 01 Agent 编排核心 + SSE + 双前端
-- [ ] Day 02 会话持久化:Redis 记忆 + 摘要压缩,支撑 50 轮长对话
+- [x] Day 02 会话持久化:Redis 记忆 + 摘要压缩 + 归档召回,支撑 50 轮长对话
 - [ ] Day 03 RAG:向量检索接入 + 召回评测集,量化效果
 - [ ] Day 04 多 Agent 协作:Planner / Executor 拆分与任务编排
 - [ ] Day 05 可观测与成本:全链路 trace、token 计费看板

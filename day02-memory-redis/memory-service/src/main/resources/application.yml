@@ -1,0 +1,79 @@
+server:
+  port: 8081
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+
+spring:
+  application:
+    name: memory-service
+  mvc:
+    async:
+      request-timeout: 300000
+  jackson:
+    default-property-inclusion: non_null
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DB:0}
+      timeout: 2s
+      lettuce:
+        pool:
+          max-active: 32
+          max-idle: 8
+          min-idle: 2
+
+agent:
+  provider: ${AGENT_PROVIDER:mock}
+  max-steps: 6
+  request-timeout: 180s
+  rate-limit-per-minute: 30
+  llm:
+    base-url: ${AGENT_LLM_BASE_URL:https://api.deepseek.com/v1}
+    api-key: ${AGENT_LLM_API_KEY:}
+    model: ${AGENT_LLM_MODEL:deepseek-chat}
+    temperature: 0.3
+    connect-timeout: 10s
+    read-timeout: 90s
+  prompt:
+    inject-tool-catalog: true
+  memory:
+    # memory: 进程内(默认,零依赖);redis: 跨实例持久化(需先起 Redis)
+    store: ${AGENT_MEMORY_STORE:memory}
+    ttl: 7d
+    budget-tokens: 6000
+    compact-threshold: 0.72
+    keep-tail-tokens: 1400
+    keep-min-segments: 2
+    max-messages: 36
+    summary-max-chars: 700
+    recall-top-k: 3
+    recall-min-score: 0.15
+    archive-max-messages: 400
+    summary-timeout: 20s
+    breaker-failures: 3
+    breaker-cooldown: 5m
+
+management:
+  health:
+    # 默认 memory 模式下没有 Redis,关掉 Redis 健康检查避免 /actuator/health 误报 DOWN;
+    # 切到 redis 模式时把 AGENT_REDIS_HEALTH 设为 true
+    redis:
+      enabled: ${AGENT_REDIS_HEALTH:false}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.memory: INFO
+    org.springframework.web.servlet.mvc.method.annotation: WARN
