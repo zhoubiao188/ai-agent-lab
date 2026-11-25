@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      # 关键:SSE 是长连接,网关的下游响应超时必须放大到比后端请求超时更长,
+      # 否则会出现"后端还在生成,网关已经 504"的情况
+      httpclient:
+        response-timeout: 300s
+        connect-timeout: 5000
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      routes:
+        - id: rag-service
+          uri: ${RAG_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/**
+        - id: rag-actuator
+          uri: ${RAG_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/actuator/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns:
+              - "http://localhost:*"
+              - "http://127.0.0.1:*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            exposed-headers:
+              - "X-Request-Id"
+            allow-credentials: true
+            max-age: 3600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty.http.client: WARN

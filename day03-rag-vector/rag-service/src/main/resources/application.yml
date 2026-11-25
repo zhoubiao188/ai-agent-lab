@@ -1,0 +1,74 @@
+server:
+  port: 8081
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+
+spring:
+  application:
+    name: rag-service
+  mvc:
+    async:
+      request-timeout: 300000
+  jackson:
+    default-property-inclusion: non_null
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+rag:
+  chunk:
+    # 中文技术文档的经验区间 300~600,改这个值必须全量重建索引
+    max-chars: 520
+    # 约为块长的 17%,用于兜住被切断的跨块信息
+    overlap-chars: 90
+    min-chars: 140
+  embed:
+    # mock: 本地字符 n-gram 特征哈希,零依赖可跑评测;openai: 任意兼容 /v1/embeddings 的服务
+    provider: ${RAG_EMBED_PROVIDER:mock}
+    dim: ${RAG_EMBED_DIM:512}
+    batch-size: 16
+    cache-size: 4096
+    base-url: ${RAG_EMBED_BASE_URL:https://api.openai.com/v1}
+    api-key: ${RAG_EMBED_API_KEY:}
+    model: ${RAG_EMBED_MODEL:text-embedding-3-small}
+  index:
+    # flat: 暴力检索,召回 100%,基线;ivf: 聚类切分,有召回损失
+    type: ${RAG_INDEX_TYPE:flat}
+    nlist: 16
+    nprobe: 4
+  search:
+    bm25-k: 30
+    vector-k: 30
+    rrf-k: 60
+    bm25-weight: 1.0
+    vector-weight: 1.0
+    # 重排时特征分占最终分的权重。这个值必须靠评测集标定:
+    # 实测 α=0.7 会让 MRR 从 0.95 掉到 0.92,α=0.2 才拿到正收益
+    rerank-alpha: 0.2
+    top-k: 8
+  llm:
+    provider: ${RAG_LLM_PROVIDER:mock}
+    base-url: ${RAG_LLM_BASE_URL:https://api.deepseek.com/v1}
+    api-key: ${RAG_LLM_API_KEY:}
+    model: ${RAG_LLM_MODEL:deepseek-chat}
+    temperature: 0.2
+    # 拼进上下文的块数:4 是经验拐点,再多会把正确块淹掉
+    context-top-k: 4
+  eval:
+    queries: eval/queries.json
+    depth: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.rag: INFO
+    org.springframework.web.servlet.mvc.method.annotation: WARN

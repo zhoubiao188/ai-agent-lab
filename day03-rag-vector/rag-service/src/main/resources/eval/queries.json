@@ -1,0 +1,311 @@
+[
+  {
+    "id": "q01",
+    "type": "terminology",
+    "query": "Spring 的三级缓存分别是什么",
+    "golds": [{"docId": "spring-boot-internals", "anchor": "singletonFactories"}]
+  },
+  {
+    "id": "q02",
+    "type": "terminology",
+    "query": "自动配置为什么没生效,怎么排查",
+    "golds": [{"docId": "spring-boot-internals", "anchor": "CONDITIONS EVALUATION REPORT"}]
+  },
+  {
+    "id": "q03",
+    "type": "paraphrase",
+    "query": "应用启动很慢,时间都花在哪一步了",
+    "golds": [{"docId": "spring-boot-internals", "anchor": "refreshContext"}]
+  },
+  {
+    "id": "q04",
+    "type": "terminology",
+    "query": "jar 包外的配置文件和包内的哪个优先",
+    "golds": [{"docId": "spring-boot-internals", "anchor": "jar 包外部"}]
+  },
+  {
+    "id": "q05",
+    "type": "terminology",
+    "query": "actuator 健康检查返回 UP 就代表业务可用吗",
+    "golds": [{"docId": "spring-boot-internals", "anchor": "liveness 与 readiness"}]
+  },
+  {
+    "id": "q06",
+    "type": "code",
+    "query": "server.shutdown 怎么配优雅停机",
+    "golds": [{"docId": "spring-boot-internals", "anchor": "server.shutdown=graceful"}]
+  },
+  {
+    "id": "q07",
+    "type": "paraphrase",
+    "query": "Tomcat 线程数是不是越大越好",
+    "golds": [{"docId": "spring-boot-internals", "anchor": "Little 定律"}]
+  },
+  {
+    "id": "q08",
+    "type": "terminology",
+    "query": "异步线程里 traceId 丢了怎么办",
+    "golds": [{"docId": "spring-boot-internals", "anchor": "TaskDecorator"}]
+  },
+  {
+    "id": "q09",
+    "type": "terminology",
+    "query": "分层镜像 layers.idx 有什么好处",
+    "golds": [{"docId": "spring-boot-internals", "anchor": "layers.idx"}]
+  },
+  {
+    "id": "q10",
+    "type": "terminology",
+    "query": "gateway 路由匹配顺序是按配置顺序吗",
+    "golds": [{"docId": "spring-cloud-gateway", "anchor": "声明顺序"}]
+  },
+  {
+    "id": "q11",
+    "type": "paraphrase",
+    "query": "前端接大模型流式输出,为什么等了很久才一次性全出来",
+    "golds": [{"docId": "spring-cloud-gateway", "anchor": "X-Accel-Buffering"}]
+  },
+  {
+    "id": "q12",
+    "type": "terminology",
+    "query": "replenishRate 和 burstCapacity 的区别",
+    "golds": [{"docId": "spring-cloud-gateway", "anchor": "burstCapacity"}]
+  },
+  {
+    "id": "q13",
+    "type": "paraphrase",
+    "query": "网关重试会不会导致重复下单",
+    "golds": [{"docId": "spring-cloud-gateway", "anchor": "幂等"}]
+  },
+  {
+    "id": "q14",
+    "type": "terminology",
+    "query": "用 Weight 断言做灰度发布",
+    "golds": [{"docId": "spring-cloud-gateway", "anchor": "Weight"}]
+  },
+  {
+    "id": "q15",
+    "type": "terminology",
+    "query": "两个 Access-Control-Allow-Origin 响应头导致跨域失败",
+    "golds": [{"docId": "spring-cloud-gateway", "anchor": "DedupeResponseHeader"}]
+  },
+  {
+    "id": "q16",
+    "type": "terminology",
+    "query": "网关上传大文件报 DataBufferLimitException",
+    "golds": [{"docId": "spring-cloud-gateway", "anchor": "max-in-memory-size"}]
+  },
+  {
+    "id": "q17",
+    "type": "english",
+    "query": "lb:// 前缀在网关路由里是什么意思",
+    "golds": [{"docId": "spring-cloud-gateway", "anchor": "lb://"}]
+  },
+  {
+    "id": "q18",
+    "type": "terminology",
+    "query": "线程池队列满了之后用什么拒绝策略做背压",
+    "golds": [{"docId": "java-concurrency", "anchor": "CallerRunsPolicy"}]
+  },
+  {
+    "id": "q19",
+    "type": "paraphrase",
+    "query": "虚拟线程在什么情况下反而更慢",
+    "golds": [{"docId": "java-concurrency", "anchor": "pinned"}]
+  },
+  {
+    "id": "q20",
+    "type": "terminology",
+    "query": "CompletableFuture 默认用哪个线程池",
+    "golds": [{"docId": "java-concurrency", "anchor": "commonPool"}]
+  },
+  {
+    "id": "q21",
+    "type": "code",
+    "query": "jstack 输出里怎么看出死锁",
+    "golds": [{"docId": "java-concurrency", "anchor": "Found one Java-level deadlock"}]
+  },
+  {
+    "id": "q22",
+    "type": "terminology",
+    "query": "ConcurrentHashMap 在 JDK8 里是怎么保证线程安全的",
+    "golds": [{"docId": "java-concurrency", "anchor": "ConcurrentHashMap"}]
+  },
+  {
+    "id": "q23",
+    "type": "terminology",
+    "query": "CAS 的 ABA 问题怎么解决",
+    "golds": [{"docId": "java-concurrency", "anchor": "AtomicStampedReference"}]
+  },
+  {
+    "id": "q24",
+    "type": "terminology",
+    "query": "volatile 能保证 count++ 的原子性吗",
+    "golds": [{"docId": "java-concurrency", "anchor": "happens-before"}]
+  },
+  {
+    "id": "q25",
+    "type": "paraphrase",
+    "query": "线程池里的 ThreadLocal 为什么会内存泄漏",
+    "golds": [{"docId": "java-concurrency", "anchor": "remove"}]
+  },
+  {
+    "id": "q26",
+    "type": "terminology",
+    "query": "联合索引最左前缀原则",
+    "golds": [{"docId": "mysql-index", "anchor": "跳过 a 直接用 b"}]
+  },
+  {
+    "id": "q27",
+    "type": "terminology",
+    "query": "explain 里出现 Using filesort 怎么优化",
+    "golds": [{"docId": "mysql-index", "anchor": "Using filesort"}]
+  },
+  {
+    "id": "q28",
+    "type": "paraphrase",
+    "query": "limit 翻到第一百万行特别慢有什么办法",
+    "golds": [{"docId": "mysql-index", "anchor": "延迟关联"}]
+  },
+  {
+    "id": "q29",
+    "type": "terminology",
+    "query": "可重复读是怎么避免幻读的",
+    "golds": [{"docId": "mysql-index", "anchor": "间隙锁"}]
+  },
+  {
+    "id": "q30",
+    "type": "code",
+    "query": "报错 1213 Deadlock found 是什么原因",
+    "golds": [{"docId": "mysql-index", "anchor": "1213"}]
+  },
+  {
+    "id": "q31",
+    "type": "terminology",
+    "query": "索引下推 Using index condition 是什么",
+    "golds": [{"docId": "mysql-index", "anchor": "Using index condition"}]
+  },
+  {
+    "id": "q32",
+    "type": "terminology",
+    "query": "MySQL8 加字段还会锁表吗",
+    "golds": [{"docId": "mysql-index", "anchor": "instant add column"}]
+  },
+  {
+    "id": "q33",
+    "type": "paraphrase",
+    "query": "慢查询日志的阈值设多少合适",
+    "golds": [{"docId": "mysql-index", "anchor": "long_query_time"}]
+  },
+  {
+    "id": "q34",
+    "type": "terminology",
+    "query": "分块的时候 overlap 设多大合适",
+    "golds": [{"docId": "rag-engineering", "anchor": "overlap"}]
+  },
+  {
+    "id": "q35",
+    "type": "paraphrase",
+    "query": "文档切成多大的块检索效果最好",
+    "golds": [{"docId": "rag-engineering", "anchor": "recall@5"}]
+  },
+  {
+    "id": "q36",
+    "type": "terminology",
+    "query": "RRF 融合为什么比加权分数稳定",
+    "golds": [{"docId": "rag-engineering", "anchor": "RRF"}]
+  },
+  {
+    "id": "q37",
+    "type": "paraphrase",
+    "query": "重排序模型效果比向量召回好在哪,代价是什么",
+    "golds": [{"docId": "rag-engineering", "anchor": "Cross-Encoder"}]
+  },
+  {
+    "id": "q38",
+    "type": "terminology",
+    "query": "评测集的标注为什么用锚点而不是块 ID",
+    "golds": [{"docId": "rag-engineering", "anchor": "定位锚点"}]
+  },
+  {
+    "id": "q39",
+    "type": "terminology",
+    "query": "NDCG 和 MRR 分别适合什么场景",
+    "golds": [{"docId": "rag-engineering", "anchor": "NDCG"}]
+  },
+  {
+    "id": "q40",
+    "type": "paraphrase",
+    "query": "离线指标很好但线上回答质量差,可能是哪里出了问题",
+    "golds": [{"docId": "rag-engineering", "anchor": "块头注入文档标题"}]
+  },
+  {
+    "id": "q41",
+    "type": "terminology",
+    "query": "流式返回的工具参数为什么要按 index 归组",
+    "golds": [{"docId": "agent-tool-calling", "anchor": "按 index 归组"}]
+  },
+  {
+    "id": "q42",
+    "type": "terminology",
+    "query": "工具描述怎么写模型才不容易调错",
+    "golds": [{"docId": "agent-tool-calling", "anchor": "enum"}]
+  },
+  {
+    "id": "q43",
+    "type": "code",
+    "query": "Future.get(timeout) 超时之后后端任务还在跑吗",
+    "golds": [{"docId": "agent-tool-calling", "anchor": "Future.get(timeout)"}]
+  },
+  {
+    "id": "q44",
+    "type": "terminology",
+    "query": "工具调用怎么保证幂等不会重复建单",
+    "golds": [{"docId": "agent-tool-calling", "anchor": "SETNX"}]
+  },
+  {
+    "id": "q45",
+    "type": "paraphrase",
+    "query": "Agent 在两个工具之间反复横跳怎么止损",
+    "golds": [{"docId": "agent-tool-calling", "anchor": "最大步数"}]
+  },
+  {
+    "id": "q46",
+    "type": "terminology",
+    "query": "工具返回结果太长怎么裁剪",
+    "golds": [{"docId": "agent-tool-calling", "anchor": "五百 token"}]
+  },
+  {
+    "id": "q47",
+    "type": "multi-hop",
+    "query": "网关响应超时和 Tomcat 线程数都会影响长连接体验,分别怎么配",
+    "golds": [
+      {"docId": "spring-cloud-gateway", "anchor": "response-timeout"},
+      {"docId": "spring-boot-internals", "anchor": "threads.max"}
+    ]
+  },
+  {
+    "id": "q48",
+    "type": "multi-hop",
+    "query": "向量检索召回不准,分块和评测两个环节各要检查什么",
+    "golds": [
+      {"docId": "rag-engineering", "anchor": "三百到六百字"},
+      {"docId": "rag-engineering", "anchor": "真实用户问题"}
+    ]
+  },
+  {
+    "id": "q49",
+    "type": "multi-hop",
+    "query": "工具超时没处理好,会不会把线程池拖垮",
+    "golds": [
+      {"docId": "agent-tool-calling", "anchor": "工具执行必须有超时"},
+      {"docId": "java-concurrency", "anchor": "CallerRunsPolicy"}
+    ]
+  },
+  {
+    "id": "q50",
+    "type": "english",
+    "query": "RAG 里 recall@5 和 MRR 应该优先看哪个",
+    "golds": [{"docId": "rag-engineering", "anchor": "recall@k 衡量前 k 个结果"}]
+  }
+]

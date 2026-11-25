@@ -6,6 +6,7 @@
 | --- | --- | --- | --- |
 | Day 01 | [`day01-agent-core`](./day01-agent-core) | 从零手写支持 Function Calling 与 SSE 流式输出的 AI Agent 服务 | Spring Boot 3.3 · Spring Cloud Gateway 2023 · Vue 3 · React 18 · SSE |
 | Day 02 | [`day02-memory-redis`](./day02-memory-redis) | Redis 会话记忆 + 滚动摘要压缩 + 归档召回,支撑 50 轮长对话 | Spring Boot 3.3 · Redis(Lettuce + Lua) · Spring Cloud Gateway · Vue 3 · React 18 |
+| Day 03 | [`day03-rag-vector`](./day03-rag-vector) | RAG 检索工程化:分块 + 混合召回(RRF)+ 特征重排 + 50 条召回评测集 | Spring Boot 3.3 · Spring Cloud Gateway · BM25/向量/IVF · Vue 3 · React 18 |
 
 ## 为什么不用现成框架
 
@@ -65,11 +66,40 @@ java -jar gateway/target/gateway-1.0.0.jar                 # :8080
 cd web-vue && npm i && npm run dev                          # :5173
 ```
 
+### Day 03 · rag-vector
+
+```
+文档 ──▶ 结构化分块(## 小节 → 句子 → 代码块原子)
+          ├──▶ BM25 倒排(中文 bigram)──┐
+          └──▶ 向量索引(flat / IVF)──┤
+                                      ▼
+                          RRF 融合 ──▶ 特征重排 ──▶ top-k 上下文
+                                      ▼
+                             引用式 SSE 生成(citations → delta)
+```
+
+- 分块三层:先按 `##` 切小节,再按句子打包到 520 字,相邻块重叠 90 字;代码围栏整块不切
+- 中文不引第三方分词器,bigram + 英文驼峰拆解,BM25 分词与向量分词彻底解耦
+- 融合用 RRF(只用名次,对量纲免疫),重排用五个可解释特征,α 由评测集扫描标定(实测 0.2 最优)
+- 50 条人工标注评测集,输出 Recall@1/3/5、MRR、NDCG@5、P50/P95,按查询类型拆解 + 失败样本
+- 实测:BM25 MRR 0.953 > 向量 0.913;融合把 R@5 从 0.97 提到 0.98;重排只值 +0.009 MRR
+- 零依赖可跑:本地字符 n-gram 哈希向量 + mock LLM;换环境变量即可接 OpenAI / DeepSeek
+
+```bash
+cd day03-rag-vector
+mvn -q -DskipTests package
+java -jar rag-service/target/rag-service-1.0.0.jar   # :8081
+java -jar gateway/target/gateway-1.0.0.jar           # :8080
+cd web-vue && npm i && npm run dev                    # :5173(Vue)
+cd web-react && npm i && npm run dev                  # :5174(React)
+```
+
 ## 路线图
 
 - [x] Day 01 Agent 编排核心 + SSE + 双前端
 - [x] Day 02 会话持久化:Redis 记忆 + 摘要压缩 + 归档召回,支撑 50 轮长对话
-- [ ] Day 03 RAG:向量检索接入 + 召回评测集,量化效果
+- [x] Day 03 RAG:混合检索 + 重排 + 召回评测集,量化效果
+- [ ] Day 04 工具调用可靠性:并行、超时重试、参数自纠正、故障注入
 - [ ] Day 04 多 Agent 协作:Planner / Executor 拆分与任务编排
 - [ ] Day 05 可观测与成本:全链路 trace、token 计费看板
 
