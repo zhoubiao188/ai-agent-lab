@@ -1,0 +1,66 @@
+server:
+  port: 8081
+  shutdown: graceful
+
+spring:
+  application:
+    name: tool-service
+  mvc:
+    async:
+      request-timeout: 300000
+  jackson:
+    default-property-inclusion: non_null
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+tool:
+  # 单工具硬超时。必须小于上游 HTTP 客户端的超时,否则你的超时永远不会先触发
+  timeout-ms: 400
+  max-attempts: 3
+  backoff-base-ms: 40
+  backoff-max-ms: 400
+  jitter: 0.5
+  retry-on-timeout: true
+  retry-on-rate-limit: true
+  retry-on-upstream5xx: true
+  retry-writes: true
+  latency-scale: ${TOOL_LATENCY_SCALE:1.0}
+  breaker:
+    # 8 秒窗口;低于 20 次调用不判定,避免低流量工具被偶发抖动熔断
+    window-ms: 8000
+    min-calls: 20
+    failure-rate: 0.5
+    open-ms: 1500
+    half-open-probes: 1
+  parallel:
+    max-concurrency: 8
+    enabled: true
+  agent:
+    budget-ms: 20000
+    max-repair-rounds: 1
+  fault:
+    # 演示时默认开,页面才能看到重试和修复;压测/生产关掉
+    enabled: ${TOOL_FAULT_ENABLED:true}
+    seed: 20261126
+    timeout-rate: 0.03
+    rate-limit-rate: 0.02
+    upstream-rate: 0.03
+    business-rate: 0.01
+    corrupt-rate: 0.12
+  bench:
+    tasks: 120
+    seed: 20261126
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.tool: INFO
+    org.springframework.web.servlet.mvc.method.annotation: WARN

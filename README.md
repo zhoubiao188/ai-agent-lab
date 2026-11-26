@@ -7,6 +7,7 @@
 | Day 01 | [`day01-agent-core`](./day01-agent-core) | 从零手写支持 Function Calling 与 SSE 流式输出的 AI Agent 服务 | Spring Boot 3.3 · Spring Cloud Gateway 2023 · Vue 3 · React 18 · SSE |
 | Day 02 | [`day02-memory-redis`](./day02-memory-redis) | Redis 会话记忆 + 滚动摘要压缩 + 归档召回,支撑 50 轮长对话 | Spring Boot 3.3 · Redis(Lettuce + Lua) · Spring Cloud Gateway · Vue 3 · React 18 |
 | Day 03 | [`day03-rag-vector`](./day03-rag-vector) | RAG 检索工程化:分块 + 混合召回(RRF)+ 特征重排 + 50 条召回评测集 | Spring Boot 3.3 · Spring Cloud Gateway · BM25/向量/IVF · Vue 3 · React 18 |
+| Day 04 | [`day04-tool-reliability`](./day04-tool-reliability) | 工具调用可靠性:参数自纠正 + 超时重试 + 依赖并行 + 熔断降级 + 故障注入 | Spring Boot 3.3 · Spring Cloud Gateway · JSON Schema · Vue 3 · React 18 |
 
 ## 为什么不用现成框架
 
@@ -94,14 +95,44 @@ cd web-vue && npm i && npm run dev                    # :5173(Vue)
 cd web-react && npm i && npm run dev                  # :5174(React)
 ```
 
+### Day 04 · tool-reliability
+
+```
+任务 ──▶ 规划器 ──▶ 参数预检/修复 ──▶ 依赖就绪调度 ──▶ 单次调用:
+                        │                 │              ├─ 预算 → 熔断 → 故障注入
+                        ▼                 │              ├─ 带超时执行 → 错误分类
+                  回灌模型一次            │              ├─ 指数退避 + 抖动重试
+                  (只回灌一次)            │              └─ 读可降级 / 写绝不
+                                          ▼
+                                      结果汇总 + SSE 时间线
+```
+
+- 参数修复两层:确定性规则(键名别名/字符串转数字/枚举归一/丢多余字段)+ 把剩余错误原文回灌一次
+- 重试四条铁律:只重试可重试类型、非幂等写一律不重试、退避带抖动、Retry-After 超上限就放弃
+- 并行不是分层而是依赖就绪调度:6 个调用从 723ms 降到 352ms;分层会让报价单白等物流 200ms
+- 熔断按工具独立 + 半开单探测 + 最小样本量,避免低流量工具被偶发抖动熔断
+- 确定性故障注入:同 seed + 同任务 → 同一批故障序列,L0~L3 四组配置可比
+- 实测 120 任务 × 4 配置:36.7% → 65.0% → 87.5% → 87.5%,失败分解显示最后 12.5% 全是业务拒绝与非幂等写接口
+- 把工单接口改成幂等后再跑:L2/L3 均 95.0% —— 机制的天花板由业务语义决定
+- 60 个测试,含两组对照实验本身
+
+```bash
+cd day04-tool-reliability
+mvn -q -DskipTests package
+java -jar tool-service/target/tool-service-1.0.0.jar   # :8081
+java -jar gateway/target/gateway-1.0.0.jar             # :8080
+cd web-vue && npm i && npm run dev                     # :5173(Vue)
+cd web-react && npm i && npm run dev                   # :5174(React)
+```
+
 ## 路线图
 
 - [x] Day 01 Agent 编排核心 + SSE + 双前端
 - [x] Day 02 会话持久化:Redis 记忆 + 摘要压缩 + 归档召回,支撑 50 轮长对话
 - [x] Day 03 RAG:混合检索 + 重排 + 召回评测集,量化效果
-- [ ] Day 04 工具调用可靠性:并行、超时重试、参数自纠正、故障注入
-- [ ] Day 04 多 Agent 协作:Planner / Executor 拆分与任务编排
-- [ ] Day 05 可观测与成本:全链路 trace、token 计费看板
+- [x] Day 04 工具调用可靠性:并行、超时重试、参数自纠正、故障注入
+- [ ] Day 05 多 Agent 协作:Planner / Executor 拆分与任务编排
+- [ ] Day 06 可观测与成本:全链路 trace、token 计费看板
 
 ## License
 
