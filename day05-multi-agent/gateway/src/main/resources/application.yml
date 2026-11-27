@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      # SSE 是长连接,网关下游响应超时必须比后端整体预算更大,
+      # 否则会出现"后端还在跑工具,网关已经 504"
+      httpclient:
+        response-timeout: 300s
+        connect-timeout: 3000
+      routes:
+        - id: multi-agent-service
+          uri: ${MULTI_AGENT_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/**
+        - id: tool-actuator
+          uri: ${MULTI_AGENT_URI:http://localhost:8081}
+          predicates:
+            - Path=/actuator/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns:
+              - "http://localhost:*"
+              - "http://127.0.0.1:*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            exposed-headers:
+              - "X-Request-Id"
+            allow-credentials: true
+            max-age: 3600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty.http.client: WARN

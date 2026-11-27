@@ -1,0 +1,77 @@
+server:
+  port: 8081
+  shutdown: graceful
+
+spring:
+  application:
+    name: multi-agent-service
+  mvc:
+    async:
+      request-timeout: 300000
+  jackson:
+    default-property-inclusion: non_null
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+# 协调层:管"计划对不对"
+coord:
+  # 一份计划最多几步。超过就是拆碎了,延迟和失败概率都是乘出来的
+  max-steps: 8
+  # 重规划最多 1 次:第二次改对的概率极低,延迟却要翻倍
+  max-replans: 1
+  # 演示用的缺陷注入率(页面上的开关),评测里由任务固定指定
+  flaw-rate: 0.5
+  budget-ms: 15000
+  bench:
+    seed: 20261127
+
+# 工具层:管"调用可不可靠",这部分直接沿用 Day04 的机制
+tool:
+  timeout-ms: 800
+  max-attempts: 2
+  backoff-base-ms: 40
+  backoff-max-ms: 300
+  jitter: 0.5
+  retry-on-timeout: true
+  retry-on-rate-limit: true
+  retry-on-upstream5xx: true
+  retry-writes: true
+  latency-scale: ${TOOL_LATENCY_SCALE:1.0}
+  breaker:
+    window-ms: 8000
+    min-calls: 20
+    failure-rate: 0.5
+    open-ms: 1500
+    half-open-probes: 1
+  parallel:
+    max-concurrency: 8
+    enabled: true
+  agent:
+    budget-ms: 15000
+    max-repair-rounds: 1
+  fault:
+    # 本文盯的是"计划错",所以工具层默认不注入故障,免得两种错误混在一起看不清
+    enabled: ${TOOL_FAULT_ENABLED:false}
+    seed: 20261127
+    timeout-rate: 0.03
+    rate-limit-rate: 0.02
+    upstream-rate: 0.03
+    business-rate: 0.01
+    corrupt-rate: 0.10
+  bench:
+    tasks: 20
+    seed: 20261127
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.example.multiagent: INFO
+    org.springframework.web.servlet.mvc.method.annotation: WARN

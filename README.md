@@ -8,6 +8,7 @@
 | Day 02 | [`day02-memory-redis`](./day02-memory-redis) | Redis 会话记忆 + 滚动摘要压缩 + 归档召回,支撑 50 轮长对话 | Spring Boot 3.3 · Redis(Lettuce + Lua) · Spring Cloud Gateway · Vue 3 · React 18 |
 | Day 03 | [`day03-rag-vector`](./day03-rag-vector) | RAG 检索工程化:分块 + 混合召回(RRF)+ 特征重排 + 50 条召回评测集 | Spring Boot 3.3 · Spring Cloud Gateway · BM25/向量/IVF · Vue 3 · React 18 |
 | Day 04 | [`day04-tool-reliability`](./day04-tool-reliability) | 工具调用可靠性:参数自纠正 + 超时重试 + 依赖并行 + 熔断降级 + 故障注入 | Spring Boot 3.3 · Spring Cloud Gateway · JSON Schema · Vue 3 · React 18 |
+| Day 05 | [`day05-multi-agent`](./day05-multi-agent) | 多 Agent 协作:计划契约 + 静态校验 + 意图覆盖 + Critic 复核 + 一次重规划 | Spring Boot 3.3 · Spring Cloud Gateway · DAG 计划 · Vue 3 · React 18 |
 
 ## 为什么不用现成框架
 
@@ -125,13 +126,45 @@ cd web-vue && npm i && npm run dev                     # :5173(Vue)
 cd web-react && npm i && npm run dev                   # :5174(React)
 ```
 
+### Day 05 · multi-agent
+
+```
+用户诉求 ──▶ Planner ──▶ 计划(DAG) ──▶ 静态校验 ──┬─ 不通过 ──▶ 重规划一次(只改结构)
+                          │                      │
+                          ├─▶ 意图覆盖核对 ──────┴─ 缺口 ──▶ 机械补步(不用模型)
+                          │
+                          ▼
+                    Executor(按拓扑序,复用已完成步骤)
+                          │
+                          ▼
+                    Critic ──▶ PASS / PATCH / REPLAN / FAIL ──▶ 交付或如实报告
+```
+
+- 计划不是列表而是 DAG:环、悬空依赖、数据流断没断,只有图能表达
+- 每个步骤声明 `covers / produces / consumes / dependsOn`,计划才从"一串调用"变成"可以被验收的契约"
+- 三类拆错三种修复成本:拆漏(机械补步,便宜)、拆错(必须重规划,且要在写之前)、拆多(只能静态看)
+- 静态校验九条规则,真正救命的是三条:引用未声明依赖、重复步骤、写操作参数不可溯源
+- 事后复核查"承诺是否兑现"而不是"步骤是否成功";但查不出拆多,所以两层都不能省
+- 重规划三条纪律:只改结构、复用已完成步骤、写失败绝不重试;幂等键必须由请求内容派生
+- 实测 20 任务 × 4 配置:C0 50.0%(假成功 10)→ C1 30.0%(只拦不修,但错误写操作 5 → 0)→ C2 55.0% → C3 100.0%,重规划 9 次
+- 49 个测试,含"假成功""拆多不可复核""重规划不重放写操作"的固化用例
+
+```bash
+cd day05-multi-agent
+mvn -q -DskipTests package
+java -jar multi-agent-service/target/multi-agent-service-1.0.0.jar   # :8081
+java -jar gateway/target/gateway-1.0.0.jar                          # :8080
+cd web-vue && npm i && npm run dev                                   # :5173(Vue)
+cd web-react && npm i && npm run dev                                 # :5174(React)
+```
+
 ## 路线图
 
 - [x] Day 01 Agent 编排核心 + SSE + 双前端
 - [x] Day 02 会话持久化:Redis 记忆 + 摘要压缩 + 归档召回,支撑 50 轮长对话
 - [x] Day 03 RAG:混合检索 + 重排 + 召回评测集,量化效果
 - [x] Day 04 工具调用可靠性:并行、超时重试、参数自纠正、故障注入
-- [ ] Day 05 多 Agent 协作:Planner / Executor 拆分与任务编排
+- [x] Day 05 多 Agent 协作:计划契约、意图覆盖、Critic 复核与重规划
 - [ ] Day 06 可观测与成本:全链路 trace、token 计费看板
 
 ## License
