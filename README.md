@@ -9,6 +9,7 @@
 | Day 03 | [`day03-rag-vector`](./day03-rag-vector) | RAG 检索工程化:分块 + 混合召回(RRF)+ 特征重排 + 50 条召回评测集 | Spring Boot 3.3 · Spring Cloud Gateway · BM25/向量/IVF · Vue 3 · React 18 |
 | Day 04 | [`day04-tool-reliability`](./day04-tool-reliability) | 工具调用可靠性:参数自纠正 + 超时重试 + 依赖并行 + 熔断降级 + 故障注入 | Spring Boot 3.3 · Spring Cloud Gateway · JSON Schema · Vue 3 · React 18 |
 | Day 05 | [`day05-multi-agent`](./day05-multi-agent) | 多 Agent 协作:计划契约 + 静态校验 + 意图覆盖 + Critic 复核 + 一次重规划 | Spring Boot 3.3 · Spring Cloud Gateway · DAG 计划 · Vue 3 · React 18 |
+| Day 06 | [`day06-observability`](./day06-observability) | 可观测与成本:20 个决策点台账 + 六信号嫌疑排序 + 尾部采样 + 200 条故障注入评测 | Spring Boot 3.3 · Micrometer · 虚拟时钟 · Vue 3 · React 18 |
 
 ## 为什么不用现成框架
 
@@ -159,14 +160,47 @@ cd web-vue && npm i && npm run dev                                   # :5173(Vue
 cd web-react && npm i && npm run dev                                 # :5174(React)
 ```
 
-## 路线图
+### Day 06 · observability
 
+```
+一次运行 ──▶ 20 个决策点台账(chosen / basis / confidence / margin / alternatives)
+              │
+              ▼
+        Span 树 + 瀑布图(决策点画成时间点标记)
+              │
+              ▼
+        六信号嫌疑排序 ──▶ 3 张卡片:分数构成 + 可核对证据 + 被否掉的选项
+                          └─ 证据覆盖规则:唯一能核对的证据不许被挤掉
+```
+
+- Span 只记录"做了什么",决策台账记录"为什么这么选";没有台账的 trace 只能告诉你结果,不能告诉你原因
+- `margin` 用相对差距且排除 chosen 自身,`margin = 0` 意味着"选的并不比被否掉的好",这是选错而不是接近
+- 并行步骤的 `selfTime` 必须按区间并集合并:子耗时之和能大于父耗时,直接相减会算出负数
+- 信号归一化必须用跨运行的绝对量:用"占本次运行比例"时,单次 LLM 调用恒为 100%,排序直接失效
+- 完整性分"已落地 / 护栏拦下"两档:试算拒绝是护栏报警,方向在上游决策;写入回显不一致才是现场
+- 200 条确定性故障注入(5 类 × 40,虚拟时钟 + seed 派生,连跑三次逐位一致):R@1 / R@3 / MRR 全 1.0
+- 三条基线:第一个报错的 Span 0.40、最慢 0.20、最贵 0.20 —— 阅读量从 29.8 个 Span 压到 3 张卡片
+- 调参记录比结果重要:0.40 → 0.80 是改度量口径(spanId → Span 名),0.80 → 1.00 是给完整性加一维
+- 成本口径三个坑:单次成本按成功次数摊、重试放大用"尝试数 / 首次尝试数"、沉默失败率只算"无 ERROR 但完整性失败"
+- 尾部采样:失败 / 低可信度 / 完整性失败必留,其余按 traceId 哈希;采样只决定上报,不决定存储
+- 49 个测试,含"护栏让位上游决策""证据覆盖规则生效""并行 selfTime 不为负"的固化用例
+
+```bash
+cd day06-observability
+mvn -q -DskipTests package
+java -jar agent-service/target/agent-service-1.0.0.jar   # :8081
+java -jar gateway/target/gateway-1.0.0.jar               # :8080
+cd web-vue && npm i && npm run dev                        # :5173(Vue)
+cd web-react && npm i && npm run dev                      # :5174(React)
+```
+
+## 路线图
 - [x] Day 01 Agent 编排核心 + SSE + 双前端
 - [x] Day 02 会话持久化:Redis 记忆 + 摘要压缩 + 归档召回,支撑 50 轮长对话
 - [x] Day 03 RAG:混合检索 + 重排 + 召回评测集,量化效果
 - [x] Day 04 工具调用可靠性:并行、超时重试、参数自纠正、故障注入
 - [x] Day 05 多 Agent 协作:计划契约、意图覆盖、Critic 复核与重规划
-- [ ] Day 06 可观测与成本:全链路 trace、token 计费看板
+- [x] Day 06 可观测与成本:决策台账、Span 树、六信号嫌疑排序、200 条故障注入评测
 
 ## License
 

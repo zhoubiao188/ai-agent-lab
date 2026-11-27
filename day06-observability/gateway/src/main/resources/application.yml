@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      httpclient:
+        response-timeout: 60s
+        connect-timeout: 3000
+      routes:
+        - id: agent-service
+          uri: ${AGENT_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/**
+        - id: agent-actuator
+          uri: ${AGENT_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/actuator/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns:
+              - "http://localhost:*"
+              - "http://127.0.0.1:*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            exposed-headers:
+              - "X-Request-Id"
+              - "X-Trace-Id"
+            allow-credentials: true
+            max-age: 3600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty.http.client: WARN

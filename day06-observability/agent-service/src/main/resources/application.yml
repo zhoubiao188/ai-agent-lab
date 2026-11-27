@@ -1,0 +1,54 @@
+server:
+  port: 8081
+  shutdown: graceful
+
+spring:
+  application:
+    name: agent-service
+  mvc:
+    async:
+      request-timeout: 60000
+  jackson:
+    default-property-inclusion: non_null
+  lifecycle:
+    timeout-per-shutdown-phase: 15s
+
+agent:
+  # 单次工具调用超时。慢工具剧本会故意超过它,用来验证"超时是否被正确识别为 TIMEOUT"
+  tool-timeout-ms: 400
+  max-attempts: 3
+  # 单步预算:超时 + 退避都从这里扣,扣完就降级,不许把全局预算吃光
+  step-budget-ms: 620
+  run-budget-ms: 6000
+  backoff-base-ms: 40
+  backoff-max-ms: 240
+  parallelism: 4
+  recall-top-k: 5
+  llm-in-price-micros: 1
+  llm-out-price-micros: 4
+  bench-incidents: 200
+  bench-seed: 20261127
+
+o11y:
+  # 成功请求只留 20%。失败、沉默失败、低可信度一律留,否则排障时永远是"恰好没采到"
+  sample-rate: 0.2
+  trust-floor: 0.75
+  store-capacity: 400
+  suspect-limit: 3
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: agent-service
+
+logging:
+  level:
+    com.example.agent: INFO
+    com.example.o11y: WARN
